@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+
+      table, td, tr {
+        border: 1px solid black;
+      }
+
+      #td-id {
+        min-width: 30px;
+      }
+
+      #td-delete {
+        min-width: 60px;
+      }
+
+      #td-title {
+        min-width: 150px;
+      }
+
+      #td-songs {
+        min-width: 300px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <p>
+      Given 3 entities: Artist (id, name), Song (id, title, artist), Playlist
+      (id, title, songs), implement the following:
+      <ul>
+        <li>
+          3 forms for each entity creation:
+          <ul>
+            <li>
+              Artist: name (id will be generated)
+            </li>
+            <li>
+              Song: name (id will be generated); artist will be selected from a
+              dropdown (the dropdown will be populated when an artist is created
+              and will display the artist name)
+            </li>
+            <li>
+              Playlist: name (id will be generated); songs will be selected from
+              a multi select (the multi select will be populated when a song is
+              created and will display artist name and song title)
+            </li>
+          </ul>
+        </li>
+        <li>
+          When a playlist is created, it will be added to a container (dom
+          element) in a list:
+          <br>
+          ID | Title &emsp;&emsp;&emsp;| Songs
+          &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;| Delete button
+          <br>
+        	1  &ensp;| Playlist title 	| Artist One - Song One<br>
+          &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;Artist X - Song Y
+        </li>
+      </ul>
+    </p>
+
+
+
+    <h2>Create Artist</h2>
+    <form id="artist-form">
+      <strong>Artist name:</strong> <input type="text" id="artist-name"
+      placeholder="(ex. Janis Joplin)">
+      <button type="button" id="create-artist">Create artist</button>
+    </form>
+
+
+    <h2>Create Song</h2>
+    <form id="song-form">
+      <strong>Song title:</strong> <input type="text" id="song-name"
+      placeholder="(ex. Piece of My Heart)">
+
+      <select id="select-artist">
+      </select>
+
+      <button type="button" id="create-song">Create song</button>
+    </form>
+
+
+    <h2>Create Playlist</h2>
+    <form id="playlist-form">
+      <strong>Playlist title:</strong> <input type="text" id="playlist-name"
+      placeholder="(ex. Favorite Songs)">
+
+      <button type="button" id="create-playlist">Show playlist</button>
+
+      <br>
+      <span id="select-song">
+      </span>
+    </form>
+
+    <br>
+    <br>
+
+    <table id="playlist-table">
+      <thead>
+        <td id="td-id">
+          <strong>ID</strong>
+        </td>
+        <td id="td-title">
+          <strong>Title</strong>
+        </td>
+        <td id="td-songs">
+          <strong>Songs</strong>
+        </td>
+        <td id="td-delete">
+          <strong>Delete</strong>
+        </td>
+      </thead>
+      <tbody id="tbody">
+      </tbody>
+    </table>
+
+
+
+
+
+    <script>
+      // create Artist class
+      class Artist {
+        constructor(name) {
+          this.name = name;
+          this.id   = Artist.incrementId();
+        }
+
+        static _id = 0;
+
+        static incrementId() {
+          return ++Artist._id;
+        }
+      }
+
+      // create Song class
+      class Song {
+        constructor(name, artist) {
+          this.name   = name;
+          this.artist = artist;
+          this.id     = Song.incrementId();
+        }
+
+        static _id = 0;
+
+        static incrementId() {
+          return ++Song._id;
+        }
+      }
+
+      // create Playlist class
+      class Playlist {
+        constructor(name, songs) {
+          this.name  = name;
+          this.songs = songs;
+          this.id    = Playlist.incrementId();
+        }
+
+        static _id = 0;
+
+        static incrementId() {
+          return ++Playlist._id;
+        }
+      }
+
+
+      // add event listener on Create artist, song and playlist buttons
+      document.getElementById("create-artist").
+        addEventListener("click", createArtistAction);
+
+
+      document.getElementById("create-song").
+        addEventListener("click", createSongAction);
+
+      document.getElementById("create-playlist").
+        addEventListener("click", createPlaylistAction);
+
+
+
+      // create items on Enter
+      document.getElementById("artist-name").
+        addEventListener("keydown", function(event) {
+          if (event.keyCode === 13) {
+            event.preventDefault();
+            createArtistAction();
+          }
+        });
+
+      document.getElementById("song-name").
+        addEventListener("keydown", function(event) {
+          if (event.keyCode === 13) {
+            event.preventDefault();
+            createSongAction();
+          }
+        });
+
+      document.getElementById("playlist-name").
+        addEventListener("keydown", function(event) {
+          if (event.keyCode === 13) {
+            event.preventDefault();
+            createPlaylistAction();
+          }
+        });
+
+
+
+      // create arrays for artist, songs and playlists created
+      let artists   = [];
+      let songs     = [];
+      let playlists = [];
+
+
+      // error handling
+      function createArtistAction() {
+        const artistName = document.getElementById("artist-name").value;
+        let artist;
+
+        try {
+          artist = createArtist(artistName);
+        } catch (e) {
+          alert(e);
+          return;
+        }
+
+        artists.push(artist);
+        createArtistList(artist);
+        console.log(artists);
+      }
+
+
+      function createSongAction() {
+        const songName = document.getElementById("song-name").value;
+        const artistId = document.getElementById("select-artist").value;
+        let song;
+
+        try {
+          song = createSong(songName, artistId);
+        } catch (e) {
+          alert(e);
+          return;
+        }
+
+        songs.push(song);
+        createSongList(song);
+        console.log(songs);
+      }
+
+
+      function createPlaylistAction() {
+        const playlistName = document.getElementById("playlist-name").value;
+        const checkedSongs = document.querySelectorAll('input[type=checkbox]:checked');
+        let playlist;
+
+        try {
+          playlist = createPlaylist(playlistName, checkedSongs);
+        } catch (e) {
+          alert(e);
+          return;
+        }
+
+        playlists.push(playlist);
+
+        const tbody = document.getElementById("tbody");
+        createPlaylistList(tbody, playlist);
+        console.log(playlists);
+      }
+
+
+      // push created artist in array and add it as an option for song creation
+      function createArtist(artistName) {
+        artistName = artistName.trim();
+
+        if (artistName.length < 2) {
+          throw "Artist name must be at least 2 characters long";
+        }
+
+        for (const artist of artists) {
+          if (artist.name === artistName) {
+            throw "Artist already exists";
+          }
+        }
+
+        return new Artist(artistName);
+      }
+
+
+      // create artist dropdown list
+      function createArtistList(artist) {
+        const artistAdded   = document.createElement("option");
+        artistAdded.value   = artist.id;
+        const artistOption  = document.createTextNode(artist.name);
+        const artistList    = document.getElementById("select-artist");
+
+        artistAdded.appendChild(artistOption);
+        artistList.appendChild(artistAdded);
+      }
+
+
+
+
+      // push created song in array
+      function createSong(songName, artistId) {
+        songName = songName.trim();
+
+        if (songName === "") {
+          throw "Song title must be at least 1 character long";
+        }
+
+        if (artistId === "") {
+          throw "Please select/insert an artist first";
+        }
+
+
+        // get selected artist
+        let artist;
+        for (let i = 0; i < artists.length; i++) {
+          if (artists[i].id === Number(artistId)) {
+            artist = artists[i];
+            break;
+          }
+        }
+
+        if (artist === undefined) {
+          throw "Artist not found";
+        }
+
+
+        // verify duplicate songs
+        for (const song of songs) {
+          if (song.name === songName && song.artist.id === artist.id) {
+            throw "Song already exists";
+          }
+        }
+
+        return new Song(songName, artist);
+      }
+
+
+      // add song as checkbox & label in the playlist form
+      function createSongList(song) {
+        const songCheckbox  = document.createElement("input");
+        songCheckbox.type   = "checkbox";
+        songCheckbox.value  = song.id;
+        songCheckbox.name   = song.artist.name + " - " + song.name;
+        songCheckbox.id     = "song-" + song.id;
+
+        const songLabel     = document.createElement("label");
+        songLabel.setAttribute("for", songCheckbox.id);
+        songLabel.innerHTML = song.artist.name + " - " + song.name + "<br>";
+
+        const songList      = document.getElementById("select-song");
+        songList.appendChild(songCheckbox);
+        songList.appendChild(songLabel);
+      }
+
+
+
+      // push created playlist in array
+      function createPlaylist(playlistName, checkedSongs) {
+        playlistName = playlistName.trim();
+
+        if (playlistName.length < 2) {
+          throw "Playlist title must be at least 2 characters long";
+        }
+
+        if (checkedSongs.length === 0) {
+          throw "You must select/insert at least 1 song";
+        }
+
+
+        let selectedSongs = [];
+        for (let i = 0; i < checkedSongs.length; i++) {
+          for (song of songs) {
+            if (song.id === Number(checkedSongs[i].value)) {
+              selectedSongs.push(song);
+            }
+          }
+        }
+
+        return new Playlist(playlistName, selectedSongs);
+      }
+
+
+      // create table with playlists
+      function createPlaylistList(tbody, playlist) {
+        // insert playlist in table
+        const row       = tbody.insertRow();
+        const cId       = row.insertCell();
+        const cName     = row.insertCell();
+        const cSongs    = row.insertCell();
+        const cDelete   = row.insertCell();
+        const ctextId   = document.createTextNode(playlist.id);
+        const ctextName = document.createTextNode(playlist.name);
+        const cButtonDelete = document.createElement("button");
+        cId.appendChild(ctextId);
+        cName.appendChild(ctextName);
+
+
+        // create song artist and title
+        for (let i = 0; i < playlist.songs.length; i++) {
+          const ctextSongs  = document.createTextNode(playlist.songs[i].artist.name +
+            " - " + playlist.songs[i].name);
+          const br          = document.createElement("br");
+
+          cSongs.appendChild(ctextSongs);
+          cSongs.appendChild(br);
+        }
+
+        // create delete button
+        cButtonDelete.innerHTML = "X";
+        cButtonDelete.setAttribute("attr-playlist-id", playlist.id);
+        cButtonDelete.addEventListener("click", deletePlaylist);
+
+        cDelete.appendChild(cButtonDelete);
+      }
+
+
+      // delete playlist
+      function deletePlaylist(button) {
+        //  delete matching row
+        const row = button.toElement.parentElement.parentElement;
+        row.parentElement.removeChild(row);
+
+
+        // delete playlist from playlists
+        const playlistId = Number(button.target.getAttribute("attr-playlist-id"));
+
+        for (let index in playlists) {
+          if (playlistId === playlists[index].id) {
+            playlists.splice(index, 1);
+            break;
+          }
+        }
+
+        console.log(playlists);
+      }
+    </script>
+  </body>
+</html>
