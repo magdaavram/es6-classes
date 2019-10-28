@@ -29,43 +29,6 @@
   </head>
 
   <body>
-    <p>
-      Given 3 entities: Artist (id, name), Song (id, title, artist), Playlist
-      (id, title, songs), implement the following:
-      <ul>
-        <li>
-          3 forms for each entity creation:
-          <ul>
-            <li>
-              Artist: name (id will be generated)
-            </li>
-            <li>
-              Song: name (id will be generated); artist will be selected from a
-              dropdown (the dropdown will be populated when an artist is created
-              and will display the artist name)
-            </li>
-            <li>
-              Playlist: name (id will be generated); songs will be selected from
-              a multi select (the multi select will be populated when a song is
-              created and will display artist name and song title)
-            </li>
-          </ul>
-        </li>
-        <li>
-          When a playlist is created, it will be added to a container (dom
-          element) in a list:
-          <br>
-          ID | Title &emsp;&emsp;&emsp;| Songs
-          &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;| Delete button
-          <br>
-        	1  &ensp;| Playlist title 	| Artist One - Song One<br>
-          &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;Artist X - Song Y
-        </li>
-      </ul>
-    </p>
-
-
-
     <h2>Create Artist</h2>
     <form id="artist-form">
       <strong>Artist name:</strong> <input type="text" id="artist-name"
